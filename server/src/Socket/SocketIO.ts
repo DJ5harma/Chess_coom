@@ -3,6 +3,7 @@ import { DefaultEventsMap, Server, Socket } from "socket.io";
 import { get_user_id } from "../Middleware/auth";
 import { randomUUID } from "crypto";
 import { redis } from "../Redis/redis";
+import { u_user_ensure_cache } from "../Routes/user/utils/u_user_ensure_cache";
 
 type io = Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
 
@@ -21,38 +22,40 @@ export class SocketIO {
 		this.io = io;
 
 		io.on("connection", (socket: og_skt) => {
-			log(socket.id, "connected");
-
-			socket.on("register-my-socket-id", (auth_token: string) => {
+			socket.on("register-my-socket-id", async (auth_token: string) => {
 				const user_id = get_user_id(auth_token);
 				if (!user_id) return;
+				if (!(await u_user_ensure_cache(user_id))) return;
+
 				socket.join(user_id);
+				console.log(user_id, "registered");
 
 				socket.user_id = user_id;
-				const skt = socket as skt;
 
-				const { game_create, game_join_as_player } = SocketIO;
-				game_create(skt);
-				game_join_as_player(skt);
+				const skt = socket as skt;
+				SocketIO.game_create(skt);
+				// SocketIO.game_join_as_player(socket);
 			});
 		});
 	}
 
-	private static game_create(skt: skt) {
+	static game_create(skt: skt) {
 		skt.on("game_create", () => {
+			log("game create request");
 			skt.emit("game_create_res", { game_id: randomUUID() });
 		});
 	}
 
-	private static game_join_as_player(skt: skt) {
-		const { user_id, emit, on } = skt;
+	static game_join_as_player(skt: skt) {
+		const user_id = skt.user_id;
 
 		async function getOpp(opponent_uid: string) {
 			return (await redis.HGETALL(`user:${opponent_uid}:data`)) as USER_DATA;
 		}
 
-		on("game_join_as_player", async (game_id: string) => {
+		skt.on("game_join_as_player", async (game_id: string) => {
 			//
+			log("Join request");
 			const [STR_GAME_SETUP, STR_GAME_JOIN] = [
 				`game:${game_id}:setup`,
 				`game:${game_id}:join`,
@@ -80,7 +83,7 @@ export class SocketIO {
 
 					const opp = await getOpp(opponent_uid);
 					//
-					emit("player_joined", { opp, am_i_white });
+					skt.emit("player_joined", { opp, am_i_white });
 				});
 				//
 			} else {
@@ -103,7 +106,7 @@ export class SocketIO {
 				const opponent_uid = black_uid ? black_uid : white_uid;
 				const opp = await getOpp(opponent_uid);
 				//
-				emit("player_joined", { opp, am_i_white });
+				skt.emit("player_joined", { opp, am_i_white });
 			}
 		});
 	}

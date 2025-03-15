@@ -7,7 +7,6 @@ import { r_user } from "./Routes/user/r_user";
 import { redisConnect } from "./Redis/redis";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { get_user_id } from "./Middleware/auth";
 import { SocketIO } from "./Socket/SocketIO";
 
 dotenv.config();
@@ -15,16 +14,15 @@ dotenv.config();
 const { PORT, MONGO_URI } = process.env;
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, { cors: { origin: "*" } });
 SocketIO.init(io);
 
 if (!PORT || !MONGO_URI)
 	console.error("atleast 1 environment variable is not accessible!");
 else {
-	app.use(cors());
-	app.use(express.json());
-
 	dbConnect(MONGO_URI).then(() => {
 		redisConnect().then(() => {
 			server.listen(PORT, () => {

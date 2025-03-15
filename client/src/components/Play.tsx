@@ -1,8 +1,15 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chess, Square } from "chess.js";
 import { Chessboard } from "react-chessboard";
+import { toast } from "react-toastify";
+import { useParams } from "react-router-dom";
+import { useSocket } from "../Providers/SocketProvider";
 
 export function Play() {
+	const { game_id } = useParams();
+	const { skt } = useSocket();
+	console.log({ game_id }, "play route");
+
 	const { current: game } = useRef(new Chess());
 	const [flag, setFlag] = useState(true);
 
@@ -19,9 +26,25 @@ export function Play() {
 			promotion: "q", // always promote to a queen for example simplicity
 		});
 
-		// illegal move
-		return move !== null;
+		if (!move) {
+			toast("Invalid move!");
+			return false;
+		}
+
+		return true;
 	}
 
-	return <Chessboard position={game.fen()} onPieceDrop={onDrop} />;
+	useEffect(() => {
+		skt.emit("game_join_as_player", game_id);
+	}, []);
+
+	return (
+		<div>
+			<Chessboard
+				boardWidth={window.innerHeight - 10}
+				position={game.fen()}
+				onPieceDrop={onDrop}
+			/>
+		</div>
+	);
 }

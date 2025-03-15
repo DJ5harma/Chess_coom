@@ -3,6 +3,7 @@ import { USER } from "../../../Database/USER";
 import { genSaltSync, hashSync } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { redis } from "../../../Redis/redis";
+import { u_user_ensure_cache } from "../utils/u_user_ensure_cache";
 
 type body = {
 	username: string;
@@ -37,7 +38,7 @@ export const c_user_register = async (req: Request, res: Response) => {
 
 	const auth_token = sign({ _id: user._id }, process.env.JWT_SECRET!);
 
-	redis.HSET(`user:${user._id}:data`, { username } as USER_DATA);
+	u_user_ensure_cache(user._id, { data: { username } });
 
 	res.json({ auth_token } as result);
 	return;
