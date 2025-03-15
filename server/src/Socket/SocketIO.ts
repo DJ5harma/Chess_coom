@@ -87,31 +87,30 @@ export class SocketIO {
 						const opp = await getOpp(opponent_uid);
 						//
 						skt.emit("player_joined", { opp, am_i_white });
-						redis.unsubscribe(STR_GAME_JOIN);
+						subscriber.unsubscribe(STR_GAME_JOIN);
 					}
 				);
 			} else {
+				// Late joiner
 				const game_setup = (await redis.HGETALL(STR_GAME_SETUP)) as GAME_SETUP;
 
 				const { black_uid, white_uid } = game_setup;
 				console.log("exists", { black_uid, white_uid });
-				if (
+
+				const player_already_joined =
 					(black_uid && black_uid === user_id) ||
-					(white_uid && white_uid === user_id)
-				) {
+					(white_uid && white_uid === user_id);
+
+				const am_i_white = white_uid === user_id;
+
+				if (!player_already_joined) {
 					log("user already joined");
-					return;
+					log("subscribe message PUBLISH");
+					await redis.publish(STR_GAME_JOIN, user_id);
 				}
 
-				// Late joiner
-				const am_i_white = white_uid === "";
-
-				log("subscribe message PUBLISH");
-				await redis.publish(STR_GAME_JOIN, user_id);
-
-				const opponent_uid = black_uid ? black_uid : white_uid;
+				const opponent_uid = am_i_white ? black_uid : white_uid;
 				const opp = await getOpp(opponent_uid);
-				//
 				skt.emit("player_joined", { opp, am_i_white });
 			}
 		});
