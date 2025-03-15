@@ -8,6 +8,7 @@ import { useSocket } from "../Providers/SocketProvider";
 export function Play() {
 	const { game_id } = useParams();
 	const { skt } = useSocket();
+
 	console.log({ game_id }, "play route");
 
 	const { current: game } = useRef(new Chess());
@@ -35,7 +36,10 @@ export function Play() {
 	}
 
 	useEffect(() => {
-		skt.emit("game_join_as_player", game_id);
+		console.log({ skt });
+		setTimeout(() => {
+			skt.emit("game_join_as_player", game_id);
+		}, 0);
 	}, []);
 
 	return (

@@ -18,7 +18,7 @@ const context = createContext<{
 export function SocketProvider({ children }: { children: ReactNode }) {
 	const socketRef = useRef(
 		io("http://localhost:4000", {
-			autoConnect: false,
+			// autoConnect: false,
 			transports: ["websocket"],
 		})
 	);
@@ -27,6 +27,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (isConnected) return;
+		socketRef.current.connect();
 		socketRef.current.on("connect", () => {
 			toast.success("Socket server connected!");
 			setIsConnected(true);
@@ -36,6 +37,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 			socketRef.current.disconnect();
 		};
 	}, []);
+
+	if (!isConnected) return <>Connecting to Websocket</>;
 
 	return (
 		<context.Provider value={{ skt: socketRef.current }}>

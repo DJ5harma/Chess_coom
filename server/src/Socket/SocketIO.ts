@@ -2,7 +2,7 @@ import { log } from "console";
 import { DefaultEventsMap, Server, Socket } from "socket.io";
 import { get_user_id } from "../Middleware/auth";
 import { randomUUID } from "crypto";
-import { redis } from "../Redis/redis";
+import { redis, redis2 } from "../Redis/redis";
 import { u_user_ensure_cache } from "../Routes/user/utils/u_user_ensure_cache";
 
 type io = Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
@@ -34,7 +34,7 @@ export class SocketIO {
 
 				const skt = socket as skt;
 				SocketIO.game_create(skt);
-				// SocketIO.game_join_as_player(socket);
+				SocketIO.game_join_as_player(skt);
 			});
 		});
 	}
@@ -61,9 +61,11 @@ export class SocketIO {
 				`game:${game_id}:join`,
 			];
 
-			let game_setup = (await redis.HGETALL(STR_GAME_SETUP)) as GAME_SETUP;
+			const game_setup_exists = await redis.EXISTS(STR_GAME_SETUP);
 
-			if (!game_setup) {
+			console.log({ game_setup_exists });
+
+			if (!game_setup_exists) {
 				// Early joiner
 				const am_i_white = [true, false][Math.floor(Math.random() * 2)];
 
@@ -73,35 +75,56 @@ export class SocketIO {
 					black_uid: am_i_white ? "" : user_id,
 				} as GAME_SETUP);
 
-				await redis.SUBSCRIBE(STR_GAME_JOIN, async (opponent_uid: string) => {
-					await redis.HSET(
-						STR_GAME_SETUP,
-						am_i_white ? "black_uid" : "white_uid",
-						opponent_uid
-					);
-					await redis.UNSUBSCRIBE(STR_GAME_JOIN);
+				redis.subscribe(STR_GAME_JOIN, (err, count) => {
+					if (err) {
+						console.error("Failed to subscribe: ", err);
+					} else {
+						console.log(`Subscribed to ${count} channel(s).`);
+					}
+				});
 
-					const opp = await getOpp(opponent_uid);
-					//
-					skt.emit("player_joined", { opp, am_i_white });
+				redis.on("message", async (channel: string, opponent_uid: string) => {
+					if (channel === STR_GAME_JOIN) {
+						log("message came");
+						await redis.HSET(
+							STR_GAME_SETUP,
+							am_i_white ? "black_uid" : "white_uid",
+							opponent_uid
+						);
+						const opp = await getOpp(opponent_uid);
+						//
+						skt.emit("player_joined", { opp, am_i_white });
+						redis.unsubscribe(STR_GAME_JOIN);
+					}
 				});
 				//
 			} else {
+				const game_setup = (await redis.HGETALL(STR_GAME_SETUP)) as GAME_SETUP;
+
 				const { black_uid, white_uid } = game_setup;
+				console.log("exists", { black_uid, white_uid });
 				if (
-					// unauthorized user tried to join
-					black_uid &&
-					black_uid !== user_id &&
-					white_uid &&
-					white_uid !== user_id
-				)
+					(black_uid && black_uid === user_id) ||
+					(white_uid && white_uid === user_id)
+				) {
+					log("user already joined");
 					return;
+				}
 
 				// Late joiner
 
-				const am_i_white = white_uid !== "";
+				const am_i_white = white_uid === "";
 
-				await redis.PUBLISH(STR_GAME_JOIN, user_id);
+				log("is late joiner white: ", am_i_white);
+
+				// await redis.HSET(
+				// 	STR_GAME_SETUP,
+				// 	am_i_white ? "white_uid" : "black_uid",
+				// 	user_id
+				// );
+
+				log("subscribe message PUBLISH");
+				await redis2.publish(STR_GAME_JOIN, user_id);
 
 				const opponent_uid = black_uid ? black_uid : white_uid;
 				const opp = await getOpp(opponent_uid);

@@ -39,13 +39,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
 		const stored_username = localStorage.getItem("username");
 		if (stored_username) setUsername(username);
-		skt.connect();
-		skt.emit("register-my-socket-id", auth_token);
 
-		return () => {
-			skt.removeAllListeners();
-			skt.disconnect();
-		};
+		skt.emit("register-my-socket-id", auth_token);
 	}, []);
 
 	return (

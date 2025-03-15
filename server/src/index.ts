@@ -18,13 +18,13 @@ app.use(cors());
 app.use(express.json());
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
-SocketIO.init(io);
 
 if (!PORT || !MONGO_URI)
 	console.error("atleast 1 environment variable is not accessible!");
 else {
 	dbConnect(MONGO_URI).then(() => {
 		redisConnect().then(() => {
+			SocketIO.init(io);
 			server.listen(PORT, () => {
 				log(`Server running at http://localhost:${PORT}`);
 			});
