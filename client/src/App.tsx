@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Chessboard } from "react-chessboard";
+import { Play } from "./components/Play";
 
 export default function App() {
-	const [moves, setMoves] = useState();
-
 	return (
 		<div style={{ width: "90vh", display: "flex" }}>
-			{/* <PlayRandomMoveEngine /> */}
+			<Play />
 		</div>
 	);
 }

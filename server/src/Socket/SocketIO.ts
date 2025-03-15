@@ -31,18 +31,20 @@ export class SocketIO {
 				socket.user_id = user_id;
 				const skt = socket as skt;
 
-				SocketIO.game_create(skt);
+				const { game_create, game_join_as_player } = SocketIO;
+				game_create(skt);
+				game_join_as_player(skt);
 			});
 		});
 	}
 
-	static game_create(skt: skt) {
+	private static game_create(skt: skt) {
 		skt.on("game_create", () => {
 			skt.emit("game_create_res", { game_id: randomUUID() });
 		});
 	}
 
-	static game_join_as_player(skt: skt) {
+	private static game_join_as_player(skt: skt) {
 		const { user_id, emit, on } = skt;
 
 		async function getOpp(opponent_uid: string) {
@@ -74,10 +76,9 @@ export class SocketIO {
 						am_i_white ? "black_uid" : "white_uid",
 						opponent_uid
 					);
+					await redis.UNSUBSCRIBE(STR_GAME_JOIN);
 
 					const opp = await getOpp(opponent_uid);
-
-					await redis.UNSUBSCRIBE(STR_GAME_JOIN);
 					//
 					emit("player_joined", { opp, am_i_white });
 				});
