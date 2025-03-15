@@ -2,7 +2,7 @@ import { log } from "console";
 import { DefaultEventsMap, Server, Socket } from "socket.io";
 import { get_user_id } from "../Middleware/auth";
 import { randomUUID } from "crypto";
-import { redis, redis2 } from "../Redis/redis";
+import { redis, subscriber } from "../Redis/redis";
 import { u_user_ensure_cache } from "../Routes/user/utils/u_user_ensure_cache";
 
 type io = Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
@@ -75,16 +75,9 @@ export class SocketIO {
 					black_uid: am_i_white ? "" : user_id,
 				} as GAME_SETUP);
 
-				redis.subscribe(STR_GAME_JOIN, (err, count) => {
-					if (err) {
-						console.error("Failed to subscribe: ", err);
-					} else {
-						console.log(`Subscribed to ${count} channel(s).`);
-					}
-				});
-
-				redis.on("message", async (channel: string, opponent_uid: string) => {
-					if (channel === STR_GAME_JOIN) {
+				await subscriber.subscribe(
+					STR_GAME_JOIN,
+					async (opponent_uid: string) => {
 						log("message came");
 						await redis.HSET(
 							STR_GAME_SETUP,
@@ -96,8 +89,7 @@ export class SocketIO {
 						skt.emit("player_joined", { opp, am_i_white });
 						redis.unsubscribe(STR_GAME_JOIN);
 					}
-				});
-				//
+				);
 			} else {
 				const game_setup = (await redis.HGETALL(STR_GAME_SETUP)) as GAME_SETUP;
 
@@ -112,19 +104,10 @@ export class SocketIO {
 				}
 
 				// Late joiner
-
 				const am_i_white = white_uid === "";
 
-				log("is late joiner white: ", am_i_white);
-
-				// await redis.HSET(
-				// 	STR_GAME_SETUP,
-				// 	am_i_white ? "white_uid" : "black_uid",
-				// 	user_id
-				// );
-
 				log("subscribe message PUBLISH");
-				await redis2.publish(STR_GAME_JOIN, user_id);
+				await redis.publish(STR_GAME_JOIN, user_id);
 
 				const opponent_uid = black_uid ? black_uid : white_uid;
 				const opp = await getOpp(opponent_uid);
