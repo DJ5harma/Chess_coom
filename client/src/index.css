@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 :root {
 	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
@@ -16,10 +17,7 @@
 
 * {
 	box-sizing: border-box;
-	/* padding: 0; */
-	/* margin: 0; */
 }
-
 input {
 	background-color: black;
 	padding: 14px;

@@ -36,7 +36,7 @@ export function Play() {
 	}
 
 	function onDrop(sourceSquare: Square, targetSquare: Square) {
-		if(boardDetails.am_i_white && game.turn() === "b") return false;
+		if (boardDetails.am_i_white && game.turn() === "b") return false;
 		const move = makeAMove({
 			from: sourceSquare,
 			to: targetSquare,
@@ -92,24 +92,37 @@ export function Play() {
 		};
 	});
 
-
 	return (
-		<div className="flex flex-wrap items-center justify-around h-screen w-screen gap-4 px-4 ">
-			<div style={{  maxWidth: "90vh", minWidth: 350 }} className="flex-1">
+		<div className="flex flex-wrap items-center justify-around border-2 border-amber-300 flex-1 h-full gap-2">
+			<div className="border-2 border-blue-500 h-full max-w-full max-h-full aspect-square">
 				<Chessboard
 					position={game.fen()}
 					onPieceDrop={onDrop}
 					boardOrientation={boardDetails.am_i_white ? "white" : "black"}
-					customDarkSquareStyle={{backgroundColor: "rgb(77, 115, 152)"}}
-					customLightSquareStyle={{backgroundColor: "rgb(235, 234, 213)"}}
+					customDarkSquareStyle={{ backgroundColor: "rgb(77, 115, 152)" }}
+					customLightSquareStyle={{ backgroundColor: "rgb(235, 234, 213)" }}
 				/>
 			</div>
-			<div className="flex flex-col max-w-md flex-1" >
-				<p className={`p-3 rounded-t-xl ${!boardDetails.am_i_white ? "bg-white text-black" : "bg-black text-white"}`}>
+			<div className="flex flex-col min-w-md">
+				<p
+					className={`p-3 rounded-t-xl ${
+						!boardDetails.am_i_white
+							? "bg-white text-black"
+							: "bg-black text-white"
+					}`}
+				>
 					{(opponent && "Opponent: " + opponent?.username) || "Opponent"}
 				</p>
 				<FormattedMoves history={game.history()} />
-				<p className={`p-3 rounded-b-xl ${boardDetails.am_i_white ? "bg-white text-black" : "bg-black text-white"}`}>Player: {username}</p>
+				<p
+					className={`p-3 rounded-b-xl ${
+						boardDetails.am_i_white
+							? "bg-white text-black"
+							: "bg-black text-white"
+					}`}
+				>
+					Player: {username}
+				</p>
 			</div>
 		</div>
 	);

@@ -4,12 +4,14 @@ import { UserProvider } from "./Providers/UserProvider";
 import { Form } from "./Pages/Form";
 import { Home } from "./Pages/Home";
 import { SocketProvider } from "./Providers/SocketProvider";
+import { Nav } from "./Components/Nav";
 
 export default function App() {
 	return (
-		<div className="h-screen flex flex-col items-center">
+		<div className="flex flex-col gap-2 h-screen">
 			<SocketProvider>
 				<UserProvider>
+					<Nav />
 					<Routes>
 						<Route path="/" element={<Home />} />
 						<Route path="/Home" element={<Home />} />
