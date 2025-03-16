@@ -1,4 +1,4 @@
-import { Play } from "./Components/Play";
+import { Play } from "./Pages/Play";
 import { Route, Routes } from "react-router-dom";
 import { UserProvider } from "./Providers/UserProvider";
 import { Form } from "./Pages/Form";

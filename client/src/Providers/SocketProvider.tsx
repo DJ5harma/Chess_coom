@@ -38,7 +38,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 		};
 	}, []);
 
-	if (!isConnected) return <>Connecting to Websocket</>;
+	// if (!isConnected) return <>Connecting to Websocket</>;
 
 	return (
 		<context.Provider value={{ skt: socketRef.current }}>

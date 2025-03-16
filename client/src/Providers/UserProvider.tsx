@@ -38,7 +38,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 		}
 
 		const stored_username = localStorage.getItem("username");
-		if (stored_username) setUsername(username);
+		if (stored_username) setUsername(stored_username);
 
 		skt.emit("register-my-socket-id", auth_token);
 	}, []);
