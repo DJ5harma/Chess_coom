@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import { useSocket } from "../Providers/SocketProvider";
 import { useUser } from "../Providers/UserProvider";
+import { FormattedMoves } from "../Components/FormattedMoves";
 
 type Opponent = {
 	username: string;
@@ -35,6 +36,7 @@ export function Play() {
 	}
 
 	function onDrop(sourceSquare: Square, targetSquare: Square) {
+		if(boardDetails.am_i_white && game.turn() === "b") return false;
 		const move = makeAMove({
 			from: sourceSquare,
 			to: targetSquare,
@@ -90,51 +92,24 @@ export function Play() {
 		};
 	});
 
-	const FormattedMoves = () => {
-		const history = game.history();
-		const res: [string, string][] = [];
-
-		for (let i = 0; i < history.length; i += 2)
-			res.push([history[i], history[i + 1]]);
-
-		return (
-			<div
-				className="flex flex-col w-full overflow-auto text-xs"
-				style={{ maxHeight: "30vh" }}
-			>
-				{res.reverse().map(([white, black], i) => {
-					return (
-						<div
-							key={i}
-							className="flex w-full border-t-2 border-white [&>p]:w-full [&>p]:text-center [&>p]:p-2"
-						>
-							<p className="bg-blue-950">
-								{Math.ceil(history.length / 2) - i}.
-							</p>
-							<p className="bg-blue-800">{white}</p>
-							<p className="bg-blue-950">{black}</p>
-						</div>
-					);
-				})}
-			</div>
-		);
-	};
 
 	return (
-		<div className="flex items-center justify-around h-screen w-screen gap-4 px-4">
-			<div style={{ width: "92vh" }}>
+		<div className="flex flex-wrap items-center justify-around h-screen w-screen gap-4 px-4 ">
+			<div style={{  maxWidth: "90vh", minWidth: 350 }} className="flex-1">
 				<Chessboard
 					position={game.fen()}
 					onPieceDrop={onDrop}
 					boardOrientation={boardDetails.am_i_white ? "white" : "black"}
+					customDarkSquareStyle={{backgroundColor: "rgb(77, 115, 152)"}}
+					customLightSquareStyle={{backgroundColor: "rgb(235, 234, 213)"}}
 				/>
 			</div>
-			<div className="flex flex-col" style={{ width: "calc(100vw - 92vh)" }}>
-				<p className="bg-black p-3">
+			<div className="flex flex-col border-2 rounded-xl max-w-md flex-1 bg-black" >
+				<p className="p-3">
 					{(opponent && "Opponent: " + opponent?.username) || "Opponent"}
 				</p>
-				<FormattedMoves />
-				<p className="bg-black p-3">Player: {username}</p>
+				<FormattedMoves history={game.history()} />
+				<p className="p-3">Player: {username}</p>
 			</div>
 		</div>
 	);
