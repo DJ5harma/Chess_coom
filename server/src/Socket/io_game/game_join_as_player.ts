@@ -50,7 +50,7 @@ export function game_join_as_player(skt: skt) {
 					const game_token = Utils.generate_game_token({
 						am_i_white,
 						moves_id,
-						game_id
+						game_id,
 					});
 
 					skt.emit("player_joined", { opp, am_i_white, game_token });
@@ -67,14 +67,16 @@ export function game_join_as_player(skt: skt) {
 			console.log("exists", { black_uid, white_uid });
 
 			const player_already_joined =
-				(black_uid && black_uid === user_id) ||
-				(white_uid && white_uid === user_id);
+				black_uid === user_id || white_uid === user_id;
 
 			const am_i_white = white_uid === user_id;
+			await redis.HSET(
+				STR_GAME_SETUP,
+				(am_i_white ? "white_uid" : "black_uid"),
+				user_id
+			);
 
 			if (!player_already_joined) {
-				log("user already joined");
-				log("subscribe message PUBLISH");
 				await redis.publish(STR_GAME_JOIN, user_id);
 			}
 

@@ -31,7 +31,7 @@ export const Utils = {
 			if (!user) return false;
 			d = { username: user.username } as USER_DATA;
 		}
-		await redis.HSET(`user:${user_id}:data`, d as USER_DATA);
+		await redis.HSET(`user:${user_id}:data`, d);
 		return true;
 	},
 

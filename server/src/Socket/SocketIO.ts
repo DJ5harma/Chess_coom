@@ -15,7 +15,6 @@ export class SocketIO {
 				if (!user_id) return;
 				if (!(await Utils.ensure_user_cache(user_id))) return;
 
-				socket.join(user_id);
 				console.log(user_id, "registered");
 
 				socket.user_id = user_id;
