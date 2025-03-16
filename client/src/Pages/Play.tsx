@@ -104,12 +104,12 @@ export function Play() {
 					customLightSquareStyle={{backgroundColor: "rgb(235, 234, 213)"}}
 				/>
 			</div>
-			<div className="flex flex-col border-2 rounded-xl max-w-md flex-1 bg-black" >
-				<p className="p-3">
+			<div className="flex flex-col max-w-md flex-1" >
+				<p className={`p-3 rounded-t-xl ${!boardDetails.am_i_white ? "bg-white text-black" : "bg-black text-white"}`}>
 					{(opponent && "Opponent: " + opponent?.username) || "Opponent"}
 				</p>
 				<FormattedMoves history={game.history()} />
-				<p className="p-3">Player: {username}</p>
+				<p className={`p-3 rounded-b-xl ${boardDetails.am_i_white ? "bg-white text-black" : "bg-black text-white"}`}>Player: {username}</p>
 			</div>
 		</div>
 	);

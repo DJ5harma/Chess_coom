@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { PlayRandomMoveEngine } from "../Components/PlayRandomMoveEngine";
 import { useSocket } from "../Providers/SocketProvider";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export const Home = () => {
 	const [gameId, setGameId] = useState("");
@@ -21,6 +22,19 @@ export const Home = () => {
 		};
 	}, []);
 
+	function handleJoinEnteredId() {
+		for(let i = IdEntry.length - 1; i != -1; --i) {
+			if (IdEntry[i] === "/") {
+				i++;
+				let id = "";
+				while (i < IdEntry.length) id += IdEntry[i++];
+				navigate(`/Play/${id}`);
+				return;
+			}
+		}
+		navigate(`/Play/${IdEntry}`);
+	}
+
 	return (
 		<div className="h-full flex flex-col items-center justify-center gap-2">
 			<h1>Play a P2P chess match!</h1>
@@ -31,9 +45,7 @@ export const Home = () => {
 				type="text"
 				placeholder="Enter game id"
 			/>
-			<button onClick={() => navigate(`/Play/${IdEntry}`)}>
-				Join entered Game id
-			</button>
+			<button onClick={handleJoinEnteredId}>Join entered Game id</button>
 			<h1>OR</h1>
 			{gameId ? (
 				<>
