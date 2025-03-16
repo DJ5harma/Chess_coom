@@ -50,6 +50,7 @@ export function game_join_as_player(skt: skt) {
 					const game_token = Utils.generate_game_token({
 						am_i_white,
 						moves_id,
+						game_id
 					});
 
 					skt.emit("player_joined", { opp, am_i_white, game_token });
@@ -80,7 +81,11 @@ export function game_join_as_player(skt: skt) {
 			const opponent_uid = am_i_white ? black_uid : white_uid;
 			const opp = await getOpp(opponent_uid);
 
-			const game_token = Utils.generate_game_token({ am_i_white, moves_id });
+			const game_token = Utils.generate_game_token({
+				am_i_white,
+				moves_id,
+				game_id,
+			});
 
 			skt.emit("player_joined", { opp, am_i_white, game_token });
 		}

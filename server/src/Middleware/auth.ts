@@ -6,7 +6,7 @@ type body = {
 };
 
 export const get_user_id = (auth_token: string) => {
-	if (!auth_token) throw new Error("Auth token not found");
+	if (!auth_token) return undefined;
 	const { _id } = verify(auth_token, process.env.JWT_SECRET!) as {
 		_id?: string;
 	};
@@ -18,7 +18,7 @@ export const auth = (req: Request) => {
 
 	const _id = get_user_id(auth_token);
 
-	if (!_id) throw new Error("Invalid auth token");
+	if (!_id) throw new Error("auth token not found");
 
 	req.body._id = _id;
 };

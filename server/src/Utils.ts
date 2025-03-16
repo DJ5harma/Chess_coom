@@ -10,7 +10,7 @@ export const Utils = {
 		const data = verify(game_token, process.env.JWT_SECRET!);
 
 		if (!data) return undefined;
-		return data as { am_i_white: boolean; moves_id: string };
+		return data as GAME_TOKEN_DATA;
 	},
 
 	async ensure_and_get_moves_pgn(moves_id: string) {
@@ -35,20 +35,23 @@ export const Utils = {
 		return true;
 	},
 
-	generate_game_token({
-		am_i_white,
-		moves_id,
-	}: {
-		am_i_white: boolean;
-		moves_id: string;
-	}) {
+	generate_game_token({ am_i_white, moves_id, game_id }: GAME_TOKEN_DATA) {
 		const game_token = sign(
 			{
 				am_i_white,
 				moves_id,
+				game_id,
 			},
 			process.env.JWT_SECRET!
 		);
 		return game_token;
+	},
+
+	get_user_id(auth_token: string) {
+		if (!auth_token) return undefined;
+		const { _id } = verify(auth_token, process.env.JWT_SECRET!) as {
+			_id?: string;
+		};
+		return _id;
 	},
 };

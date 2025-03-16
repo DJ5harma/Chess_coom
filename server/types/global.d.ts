@@ -10,6 +10,13 @@ declare global {
 	};
 	var GAME_SETUP: GAME_SETUP;
 
+	type GAME_TOKEN_DATA = {
+		am_i_white: boolean;
+		moves_id: string;
+		game_id: string;
+	};
+	var GAME_TOKEN_DATA: GAME_TOKEN_DATA;
+
 	type USER_DATA = {
 		username: string;
 	};
