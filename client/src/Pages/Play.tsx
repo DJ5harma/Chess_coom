@@ -54,17 +54,11 @@ export function Play() {
 	}
 
 	useEffect(() => {
-		setTimeout(() => {
-			skt.emit("game_join_as_player", game_id);
-		}, 0);
-	}, []);
-
-	useEffect(() => {
 		function game_moves_incoming(newPgn: string) {
+			toast("Move came")
 			game.loadPgn(newPgn);
-			setFlag(!flag);
+			setFlag(p=>!p);
 		}
-
 		function player_joined({
 			opp,
 			am_i_white,
@@ -75,22 +69,21 @@ export function Play() {
 			game_token: string;
 		}) {
 			console.log("PLayer joined", opp);
-
+			toast.dismiss();
+			toast(opp.username + " has joined!");
+	
 			setOpponent(opp);
 			setBoardDetails({ ...boardDetails, am_i_white });
 			setGameToken(game_token);
 		}
-		const tout = setTimeout(() => {
+		setTimeout(() => {
+			skt.emit("game_join_as_player", game_id);
+			toast.loading("Waiting for your opponent...");
 			skt.on("player_joined", player_joined);
 			skt.on("game_moves_incoming", game_moves_incoming);
-
-			console.log({ username });
 		}, 0);
+	}, []);
 
-		return () => {
-			clearTimeout(tout);
-		};
-	});
 
 	return (
 		<div className="flex flex-wrap items-center justify-around border-2 border-amber-300 flex-1 h-full gap-2">
