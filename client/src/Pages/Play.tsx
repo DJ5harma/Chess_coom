@@ -36,7 +36,11 @@ export function Play() {
 	}
 
 	function onDrop(sourceSquare: Square, targetSquare: Square) {
-		if (boardDetails.am_i_white && game.turn() === "b") return false;
+		if (
+			(boardDetails.am_i_white && game.turn() === "b") ||
+			(!boardDetails.am_i_white && game.turn() === "w")
+		)
+			return false;
 		const move = makeAMove({
 			from: sourceSquare,
 			to: targetSquare,
@@ -55,9 +59,8 @@ export function Play() {
 
 	useEffect(() => {
 		function game_moves_incoming(newPgn: string) {
-			toast("Move came")
 			game.loadPgn(newPgn);
-			setFlag(p=>!p);
+			setFlag((p) => !p);
 		}
 		function player_joined({
 			opp,
@@ -71,19 +74,23 @@ export function Play() {
 			console.log("PLayer joined", opp);
 			toast.dismiss();
 			toast(opp.username + " has joined!");
-	
+
 			setOpponent(opp);
 			setBoardDetails({ ...boardDetails, am_i_white });
 			setGameToken(game_token);
 		}
-		setTimeout(() => {
+		const timeout = setTimeout(() => {
 			skt.emit("game_join_as_player", game_id);
 			toast.loading("Waiting for your opponent...");
 			skt.on("player_joined", player_joined);
 			skt.on("game_moves_incoming", game_moves_incoming);
 		}, 0);
-	}, []);
 
+		return () => {
+			clearTimeout(timeout);
+			skt.removeAllListeners();
+		};
+	}, []);
 
 	return (
 		<div className="flex flex-wrap items-center justify-around border-2 border-amber-300 flex-1 h-full gap-2">
