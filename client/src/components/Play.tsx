@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Chess, Square } from "chess.js";
+import { Chess, Move, Square } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
@@ -23,6 +23,8 @@ export function Play() {
 		am_i_white: true,
 	});
 
+	const [gameToken, setGameToken] = useState("");
+
 	function makeAMove(move: any) {
 		const result = game.move(move);
 		setFlag(!flag);
@@ -41,28 +43,47 @@ export function Play() {
 			return false;
 		}
 
+		skt.emit("game_move", { move, game_token: gameToken });
+
 		return true;
 	}
 
 	useEffect(() => {
+		setTimeout(() => {
+			skt.emit("game_join_as_player", game_id);
+		}, 0);
+	}, []);
+
+	useEffect(() => {
+		function game_fen_incoming(newFen: string) {
+			game.load(newFen);
+			setFlag(!flag);
+		}
+
 		function player_joined({
 			opp,
 			am_i_white,
+			game_token,
 		}: {
 			opp: Opponent;
 			am_i_white: boolean;
+			game_token: string;
 		}) {
 			console.log("PLayer joined", opp);
 
 			setOpponent(opp);
 			setBoardDetails({ ...boardDetails, am_i_white });
+			setGameToken(game_token);
 		}
-
 		setTimeout(() => {
-			skt.emit("game_join_as_player", game_id);
 			skt.on("player_joined", player_joined);
+			skt.on("game_fen_incoming", game_fen_incoming);
 		}, 0);
-	}, []);
+
+		return () => {
+			// clearTimeout(tout);
+		};
+	}, [game, flag]);
 
 	return (
 		<div>

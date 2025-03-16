@@ -1,3 +1,5 @@
+import { DefaultEventsMap, Server, Socket } from "socket.io";
+
 export {};
 
 declare global {
@@ -12,4 +14,18 @@ declare global {
 		username: string;
 	};
 	var USER_DATA: USER_DATA;
+
+	type io = Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
+	var io: io;
+
+	interface og_skt
+		extends Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> {
+		user_id?: string;
+	}
+	var og_skt: og_skt;
+
+	interface skt extends og_skt {
+		user_id: string;
+	}
+	var skt: skt;
 }
