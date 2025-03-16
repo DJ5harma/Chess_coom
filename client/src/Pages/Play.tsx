@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Chess, Square } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSocket } from "../Providers/SocketProvider";
 import { useUser } from "../Providers/UserProvider";
 import { FormattedMoves } from "../Components/FormattedMoves";
@@ -29,6 +29,26 @@ export function Play() {
 
 	const { username } = useUser();
 
+	const navigate = useNavigate();
+
+	function handleAfterMath(from_opp: boolean) {
+		if (game.isCheckmate()) {
+			if (!from_opp) toast.success("Checkmate! you won!");
+			else toast("Checkmate! you lost!");
+			navigate("/");
+		}
+
+		if (game.isDraw()) {
+			if (game.isInsufficientMaterial())
+				toast("Draw due to insufficient material!");
+			else if (game.isStalemate()) toast("Draw by Stalemate!");
+			else if (game.isThreefoldRepetition()) toast("Draw by 3 fold repetition");
+			else if (game.isDrawByFiftyMoves()) toast("Draw by 50 moves!");
+			else toast("Draw!");
+			navigate("/");
+		}
+	}
+
 	function makeAMove(move: any) {
 		const result = game.move(move);
 		setFlag(!flag);
@@ -53,7 +73,8 @@ export function Play() {
 		}
 
 		skt.emit("game_move", { move, game_token: gameToken });
-
+		handleAfterMath(false);
+		
 		return true;
 	}
 
@@ -61,6 +82,7 @@ export function Play() {
 		function game_moves_incoming(newPgn: string) {
 			game.loadPgn(newPgn);
 			setFlag((p) => !p);
+			handleAfterMath(true);
 		}
 		function player_joined({
 			opp,

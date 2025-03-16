@@ -14,6 +14,12 @@ export const USER =
 					type: String,
 					required: [true, "<hashedPassword> didn't reach"],
 				},
+				games: [
+					{
+						type: Schema.Types.ObjectId,
+						ref: "GAME",
+					},
+				],
 			},
 			{ timestamps: true }
 		)

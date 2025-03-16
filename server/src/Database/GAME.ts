@@ -12,7 +12,11 @@ export const GAME =
 				},
 				white: { type: Schema.Types.ObjectId, ref: "USER" },
 				black: { type: Schema.Types.ObjectId, ref: "USER" },
-				white_won: { type: Boolean, required: [true, "white_won required"] },
+				result: {
+					type: String,
+					enum: ["w", "b", "d"],
+					required: [true, "result required"],
+				},
 			},
 			{ timestamps: true }
 		)

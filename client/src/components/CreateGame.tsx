@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 export const CreateGame = () => {
 	const [gameId, setGameId] = useState("");
-	const [canceled, setCanceled] = useState(true);
 	const { skt } = useSocket();
 	const navigate = useNavigate();
 
@@ -21,7 +20,7 @@ export const CreateGame = () => {
 
 	return (
 		<div className="flex flex-col items-center gap-2 p-4">
-			{gameId && !canceled ? (
+			{gameId ? (
 				<>
 					<p className="bg-black px-4 py-2 rounded-2xl">{gameId}</p>
 					<button
@@ -30,17 +29,11 @@ export const CreateGame = () => {
 					>
 						Join here
 					</button>
-					<button onClick={() => setCanceled(true)} className="bg-red-800">
-						Cancel
-					</button>
 				</>
 			) : (
 				<>
 					<button
-						onClick={() => {
-                            if(!gameId.length) skt.emit("game_create");
-                            else setCanceled(false)
-						}}
+						onClick={() => skt.emit("game_create")}
 						className="bg-blue-800"
 					>
 						Create new Game
