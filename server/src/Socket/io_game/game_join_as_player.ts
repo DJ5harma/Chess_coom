@@ -1,26 +1,7 @@
 import { log } from "console";
 import { redis, subscriber } from "../../Redis/redis";
 import { randomUUID } from "crypto";
-
-import jwt from "jsonwebtoken";
-import { Utils } from "../../utils";
-
-function generate_game_token({
-	am_i_white,
-	moves_id,
-}: {
-	am_i_white: boolean;
-	moves_id: string;
-}) {
-	const game_token = jwt.sign(
-		{
-			am_i_white,
-			moves_id,
-		},
-		process.env.JWT_SECRET!
-	);
-	return game_token;
-}
+import { Utils } from "../../Utils";
 
 export function game_join_as_player(skt: skt) {
 	const user_id = skt.user_id;
@@ -57,16 +38,19 @@ export function game_join_as_player(skt: skt) {
 			await subscriber.subscribe(
 				STR_GAME_JOIN,
 				async (opponent_uid: string) => {
-					log("message came");
 					await redis.HSET(
 						STR_GAME_SETUP,
 						am_i_white ? "black_uid" : "white_uid",
 						opponent_uid
 					);
 					const opp = await getOpp(opponent_uid);
+					log("message came", { opp });
 					//
 
-					const game_token = generate_game_token({ am_i_white, moves_id });
+					const game_token = Utils.generate_game_token({
+						am_i_white,
+						moves_id,
+					});
 
 					skt.emit("player_joined", { opp, am_i_white, game_token });
 					subscriber.unsubscribe(STR_GAME_JOIN);
@@ -96,7 +80,7 @@ export function game_join_as_player(skt: skt) {
 			const opponent_uid = am_i_white ? black_uid : white_uid;
 			const opp = await getOpp(opponent_uid);
 
-			const game_token = generate_game_token({ am_i_white, moves_id });
+			const game_token = Utils.generate_game_token({ am_i_white, moves_id });
 
 			skt.emit("player_joined", { opp, am_i_white, game_token });
 		}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Chess, Move, Square } from "chess.js";
+import { Chess, Square } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
@@ -99,8 +99,8 @@ export function Play() {
 
 		return (
 			<div
-				className="flex flex-col w-full overflow-auto"
-				style={{ maxHeight: "50vh" }}
+				className="flex flex-col w-full overflow-auto text-xs"
+				style={{ maxHeight: "30vh" }}
 			>
 				{res.reverse().map(([white, black], i) => {
 					return (

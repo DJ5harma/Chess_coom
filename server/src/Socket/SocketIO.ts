@@ -1,8 +1,8 @@
 import { get_user_id } from "../Middleware/auth";
-import { u_user_ensure_cache } from "../Routes/user/utils/u_user_ensure_cache";
 import { game_join_as_player } from "./io_game/game_join_as_player";
 import { game_create } from "./io_game/game_create";
 import { game_move } from "./io_game/game_move";
+import { Utils } from "../Utils";
 
 export class SocketIO {
 	static io: io;
@@ -13,7 +13,7 @@ export class SocketIO {
 			socket.on("register-my-socket-id", async (auth_token: string) => {
 				const user_id = get_user_id(auth_token);
 				if (!user_id) return;
-				if (!(await u_user_ensure_cache(user_id))) return;
+				if (!(await Utils.ensure_user_cache(user_id))) return;
 
 				socket.join(user_id);
 				console.log(user_id, "registered");

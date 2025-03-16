@@ -1,7 +1,7 @@
 import { Chess } from "chess.js";
 import { redis } from "../../Redis/redis";
 import { log } from "console";
-import { Utils } from "../../utils";
+import { Utils } from "../../Utils";
 
 let chess = new Chess();
 
