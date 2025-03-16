@@ -103,12 +103,12 @@ export function game_join_as_player(skt: skt) {
 
 		const STR_GAME_MOVES = `moves:${moves_id}`;
 		await subscriber.subscribe(STR_GAME_MOVES, (newFen) => {
-			skt.emit("game_fen_incoming", newFen);
+			skt.emit("game_moves_incoming", newFen);
 		});
 
-		const oldFen = await Utils.ensure_and_get_moves_fen(moves_id);
+		const pgn = await Utils.ensure_and_get_moves_pgn(moves_id);
 
-		log({ oldFen });
-		skt.emit("game_fen_incoming", oldFen);
+		log({ pgn });
+		skt.emit("game_moves_incoming", pgn);
 	});
 }

@@ -17,7 +17,7 @@ export function game_move(skt: skt) {
 
 			const STR_GAME_MOVES = `moves:${moves_id}`;
 
-			chess.load(await Utils.ensure_and_get_moves_fen(moves_id));
+			chess.loadPgn(await Utils.ensure_and_get_moves_pgn(moves_id));
 
 			const turn = am_i_white ? "w" : "b";
 			if (turn !== chess.turn()) return;
@@ -26,10 +26,10 @@ export function game_move(skt: skt) {
 			log({ valid_move });
 			if (!valid_move) return;
 
-			const newFen = chess.fen();
+			const newPgn = chess.pgn();
 
-			await redis.SET(STR_GAME_MOVES, newFen);
-			redis.publish(STR_GAME_MOVES, newFen);
+			await redis.SET(STR_GAME_MOVES, newPgn);
+			redis.publish(STR_GAME_MOVES, newPgn);
 			// log({ moves });
 
 			// chess.clear();

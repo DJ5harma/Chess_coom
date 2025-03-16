@@ -55,8 +55,8 @@ export function Play() {
 	}, []);
 
 	useEffect(() => {
-		function game_fen_incoming(newFen: string) {
-			game.load(newFen);
+		function game_moves_incoming(newPgn: string) {
+			game.loadPgn(newPgn);
 			setFlag(!flag);
 		}
 
@@ -77,7 +77,7 @@ export function Play() {
 		}
 		setTimeout(() => {
 			skt.on("player_joined", player_joined);
-			skt.on("game_fen_incoming", game_fen_incoming);
+			skt.on("game_moves_incoming", game_moves_incoming);
 		}, 0);
 
 		return () => {
@@ -86,14 +86,18 @@ export function Play() {
 	}, [game, flag]);
 
 	return (
-		<div>
-			{opponent?.username}
-			<Chessboard
-				boardWidth={window.innerHeight - 10}
-				position={game.fen()}
-				onPieceDrop={onDrop}
-				boardOrientation={boardDetails.am_i_white ? "white" : "black"}
-			/>
+		<div
+			className="flex items-center justify-center w-screen h-screen"
+			style={{ width: "90vh" }}
+		>
+			<div className="flex flex-col gap-2" style={{ width: "90%" }}>
+				{opponent && "Opponent: " + opponent?.username}
+				<Chessboard
+					position={game.fen()}
+					onPieceDrop={onDrop}
+					boardOrientation={boardDetails.am_i_white ? "white" : "black"}
+				/>
+			</div>
 		</div>
 	);
 }

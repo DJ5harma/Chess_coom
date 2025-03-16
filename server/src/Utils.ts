@@ -12,13 +12,13 @@ export const Utils = {
 		return data as { am_i_white: boolean; moves_id: string };
 	},
 
-	async ensure_and_get_moves_fen(moves_id: string) {
+	async ensure_and_get_moves_pgn(moves_id: string) {
 		const STR_GAME_MOVES = `moves:${moves_id}`;
-		let fen = await redis.GET(STR_GAME_MOVES);
-		if (!fen) {
-			fen = initial_chess.fen();
-			await redis.SET(STR_GAME_MOVES, fen);
+		let pgn = await redis.GET(STR_GAME_MOVES);
+		if (!pgn) {
+			pgn = initial_chess.pgn();
+			await redis.SET(STR_GAME_MOVES, pgn);
 		}
-		return fen;
+		return pgn;
 	},
 };

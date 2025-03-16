@@ -12,6 +12,7 @@ export default function App() {
 				<UserProvider>
 					<Routes>
 						<Route path="/" element={<Home />} />
+						<Route path="/Home" element={<Home />} />
 						<Route path="/Form" element={<Form />} />
 						<Route path="/Play/:game_id" element={<Play />} />
 					</Routes>
