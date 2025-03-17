@@ -1,4 +1,3 @@
-import { log } from "console";
 import { redis, subscriber } from "../../Redis/redis";
 import { randomUUID } from "crypto";
 import { UTILS } from "../../Misc/UTILS";
@@ -14,14 +13,9 @@ export function game_join_as_player(skt: skt) {
 	}
 
 	skt.on("game_join_as_player", async (game_id: string) => {
-		//
-		log("Join request");
-
 		const game_setup_exists = await redis.EXISTS(
 			LABELS.REDIS_GAME_SETUP_DATA(game_id)
 		);
-
-		console.log({ game_setup_exists });
 
 		let moves_id: string;
 
@@ -45,7 +39,6 @@ export function game_join_as_player(skt: skt) {
 						opponent_uid
 					);
 					const opp = await getOpp(opponent_uid);
-					log("message came", { opp });
 					//
 
 					const game_token = UTILS.generate_game_token({
@@ -68,8 +61,6 @@ export function game_join_as_player(skt: skt) {
 
 			const { black_uid, white_uid } = game_setup;
 			moves_id = game_setup.moves_id;
-
-			console.log("exists", { black_uid, white_uid });
 
 			const player_already_joined =
 				black_uid === user_id || white_uid === user_id;
@@ -109,7 +100,6 @@ export function game_join_as_player(skt: skt) {
 
 		const pgn = await UTILS.ensure_and_get_moves_pgn(moves_id);
 
-		log({ pgn });
 		skt.emit("game_moves_incoming", pgn);
 	});
 }

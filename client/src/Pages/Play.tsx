@@ -12,55 +12,53 @@ type Opponent = {
 };
 
 export function Play() {
+	const { username } = useUser();
+	const navigate = useNavigate();
 	const { game_id } = useParams();
 	const { skt } = useSocket();
 
 	console.log({ game_id }, "play route");
 
-	const { current: game } = useRef(new Chess());
+	const { current: chess } = useRef(new Chess());
 	const [flag, setFlag] = useState(true);
 
-	const [opponent, setOpponent] = useState<null | Opponent>(null);
-	const [boardDetails, setBoardDetails] = useState({
-		am_i_white: true,
+	const [details, setDetails] = useState<{
+		my_color: "w" | "b";
+		opponent: null | Opponent;
+	}>({
+		my_color: "w",
+		opponent: null,
 	});
 
 	const [gameToken, setGameToken] = useState("");
 
-	const { username } = useUser();
-
-	const navigate = useNavigate();
-
-	function handleAfterMath(from_opp: boolean) {
-		if (game.isCheckmate()) {
-			if (!from_opp) toast.success("Checkmate! you won!");
+	function handleAfterMath(move_by: "w" | "b") {
+		if (chess.isCheckmate()) {
+			if (move_by === details.my_color) toast.success("Checkmate! you won!");
 			else toast("Checkmate! you lost!");
 			navigate("/");
+			return;
 		}
-
-		if (game.isDraw()) {
-			if (game.isInsufficientMaterial())
+		if (chess.isDraw()) {
+			if (chess.isInsufficientMaterial())
 				toast("Draw due to insufficient material!");
-			else if (game.isStalemate()) toast("Draw by Stalemate!");
-			else if (game.isThreefoldRepetition()) toast("Draw by 3 fold repetition");
-			else if (game.isDrawByFiftyMoves()) toast("Draw by 50 moves!");
+			else if (chess.isStalemate()) toast("Draw by Stalemate!");
+			else if (chess.isThreefoldRepetition())
+				toast("Draw by 3 fold repetition");
+			else if (chess.isDrawByFiftyMoves()) toast("Draw by 50 moves!");
 			else toast("Draw!");
 			navigate("/");
 		}
 	}
 
 	function makeAMove(move: any) {
-		const result = game.move(move);
+		const result = chess.move(move);
 		setFlag(!flag);
 		return result; // null if the move was illegal, the move object if the move was legal
 	}
 
 	function onDrop(sourceSquare: Square, targetSquare: Square) {
-		if (
-			(boardDetails.am_i_white && game.turn() === "b") ||
-			(!boardDetails.am_i_white && game.turn() === "w")
-		)
-			return false;
+		if (details.my_color !== chess.turn()) return false;
 		const move = makeAMove({
 			from: sourceSquare,
 			to: targetSquare,
@@ -73,16 +71,17 @@ export function Play() {
 		}
 
 		skt.emit("game_move", { move, game_token: gameToken });
-		handleAfterMath(false);
-		
+		handleAfterMath(details.my_color);
+
 		return true;
 	}
 
 	useEffect(() => {
 		function game_moves_incoming(newPgn: string) {
-			game.loadPgn(newPgn);
+			const move_by = chess.turn();
+			chess.loadPgn(newPgn);
 			setFlag((p) => !p);
-			handleAfterMath(true);
+			handleAfterMath(move_by);
 		}
 		function player_joined({
 			opp,
@@ -97,8 +96,11 @@ export function Play() {
 			toast.dismiss();
 			toast(opp.username + " has joined!");
 
-			setOpponent(opp);
-			setBoardDetails({ ...boardDetails, am_i_white });
+			setDetails({
+				...details,
+				opponent: opp,
+				my_color: am_i_white ? "w" : "b",
+			});
 			setGameToken(game_token);
 		}
 		const timeout = setTimeout(() => {
@@ -118,9 +120,9 @@ export function Play() {
 		<div className="flex flex-wrap items-center justify-around border-2 border-amber-300 flex-1 h-full gap-2">
 			<div className="border-2 border-blue-500 h-full max-w-full max-h-full aspect-square">
 				<Chessboard
-					position={game.fen()}
+					position={chess.fen()}
 					onPieceDrop={onDrop}
-					boardOrientation={boardDetails.am_i_white ? "white" : "black"}
+					boardOrientation={details.my_color === "w" ? "white" : "black"}
 					customDarkSquareStyle={{ backgroundColor: "rgb(77, 115, 152)" }}
 					customLightSquareStyle={{ backgroundColor: "rgb(235, 234, 213)" }}
 				/>
@@ -128,17 +130,18 @@ export function Play() {
 			<div className="flex flex-col min-w-md">
 				<p
 					className={`p-3 rounded-t-xl ${
-						!boardDetails.am_i_white
+						details.my_color === "b"
 							? "bg-white text-black"
 							: "bg-black text-white"
 					}`}
 				>
-					{(opponent && "Opponent: " + opponent?.username) || "Opponent"}
+					{(details.opponent && "Opponent: " + details.opponent?.username) ||
+						"Opponent"}
 				</p>
-				<FormattedMoves history={game.history()} />
+				<FormattedMoves history={chess.history()} />
 				<p
 					className={`p-3 rounded-b-xl ${
-						boardDetails.am_i_white
+						details.my_color === "w"
 							? "bg-white text-black"
 							: "bg-black text-white"
 					}`}
