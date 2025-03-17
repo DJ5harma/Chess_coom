@@ -3,7 +3,7 @@ import { USER } from "../../../Database/USER";
 import { sign } from "jsonwebtoken";
 import { compareSync } from "bcryptjs";
 import { redis } from "../../../Redis/redis";
-import { Utils } from "../../../Utils";
+import { LABELS } from "../../../Misc/LABELS";
 
 type body = {
 	username: string;
@@ -27,9 +27,7 @@ export const c_user_login = async (req: Request, res: Response) => {
 
 	console.log(user.username);
 
-	Utils.ensure_user_cache(user._id, { data: { username } });
-
-	redis.HSET(`user:${user._id}:data`, { username } as USER_DATA);
+	redis.HSET(LABELS.REDIS_USER_DATA(user._id), { username } as REDIS_USER_DATA);
 
 	res.json({ auth_token, username: user.username } as result);
 	return;

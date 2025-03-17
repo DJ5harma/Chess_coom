@@ -1,14 +1,14 @@
-import { DefaultEventsMap, Server, Socket } from "socket.io";
+import { type DefaultEventsMap, type Socket } from "socket.io";
 
 export {};
 
 declare global {
-	type GAME_SETUP = {
+	type REDIS_GAME_SETUP_DATA = {
 		moves_id: string;
 		white_uid: string;
 		black_uid: string;
 	};
-	var GAME_SETUP: GAME_SETUP;
+	var REDIS_GAME_SETUP_DATA: REDIS_GAME_SETUP_DATA;
 
 	type GAME_TOKEN_DATA = {
 		am_i_white: boolean;
@@ -17,13 +17,10 @@ declare global {
 	};
 	var GAME_TOKEN_DATA: GAME_TOKEN_DATA;
 
-	type USER_DATA = {
+	type REDIS_USER_DATA = {
 		username: string;
 	};
-	var USER_DATA: USER_DATA;
-
-	type io = Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
-	var io: io;
+	var REDIS_USER_DATA: REDIS_USER_DATA;
 
 	interface og_skt
 		extends Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> {

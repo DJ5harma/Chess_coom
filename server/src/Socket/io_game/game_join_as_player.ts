@@ -1,24 +1,25 @@
 import { log } from "console";
 import { redis, subscriber } from "../../Redis/redis";
 import { randomUUID } from "crypto";
-import { Utils } from "../../Utils";
+import { UTILS } from "../../Misc/UTILS";
+import { LABELS } from "../../Misc/LABELS";
 
 export function game_join_as_player(skt: skt) {
 	const user_id = skt.user_id;
 
 	async function getOpp(opponent_uid: string) {
-		return (await redis.HGETALL(`user:${opponent_uid}:data`)) as USER_DATA;
+		return (await redis.HGETALL(
+			LABELS.REDIS_USER_DATA(opponent_uid)
+		)) as REDIS_USER_DATA;
 	}
 
 	skt.on("game_join_as_player", async (game_id: string) => {
 		//
 		log("Join request");
-		const [STR_GAME_SETUP, STR_GAME_JOIN] = [
-			`game:${game_id}:setup`,
-			`game:${game_id}:join`,
-		];
 
-		const game_setup_exists = await redis.EXISTS(STR_GAME_SETUP);
+		const game_setup_exists = await redis.EXISTS(
+			LABELS.REDIS_GAME_SETUP_DATA(game_id)
+		);
 
 		console.log({ game_setup_exists });
 
@@ -29,17 +30,17 @@ export function game_join_as_player(skt: skt) {
 			const am_i_white = [true, false][Math.floor(Math.random() * 2)];
 			moves_id = randomUUID();
 
-			await redis.HSET(STR_GAME_SETUP, {
+			await redis.HSET(LABELS.REDIS_GAME_SETUP_DATA(game_id), {
 				moves_id,
 				white_uid: am_i_white ? user_id : "",
 				black_uid: am_i_white ? "" : user_id,
-			} as GAME_SETUP);
+			} as REDIS_GAME_SETUP_DATA);
 
 			await subscriber.subscribe(
-				STR_GAME_JOIN,
+				LABELS.REDIS_GAME_JOIN_AS_PLAYER_CHANNEL(game_id),
 				async (opponent_uid: string) => {
 					await redis.HSET(
-						STR_GAME_SETUP,
+						LABELS.REDIS_GAME_SETUP_DATA(game_id),
 						am_i_white ? "black_uid" : "white_uid",
 						opponent_uid
 					);
@@ -47,19 +48,23 @@ export function game_join_as_player(skt: skt) {
 					log("message came", { opp });
 					//
 
-					const game_token = Utils.generate_game_token({
+					const game_token = UTILS.generate_game_token({
 						am_i_white,
 						moves_id,
 						game_id,
 					});
 
 					skt.emit("player_joined", { opp, am_i_white, game_token });
-					subscriber.unsubscribe(STR_GAME_JOIN);
+					subscriber.unsubscribe(
+						LABELS.REDIS_GAME_JOIN_AS_PLAYER_CHANNEL(game_id)
+					);
 				}
 			);
 		} else {
 			// Late joiner
-			const game_setup = (await redis.HGETALL(STR_GAME_SETUP)) as GAME_SETUP;
+			const game_setup = (await redis.HGETALL(
+				LABELS.REDIS_GAME_SETUP_DATA(game_id)
+			)) as REDIS_GAME_SETUP_DATA;
 
 			const { black_uid, white_uid } = game_setup;
 			moves_id = game_setup.moves_id;
@@ -71,19 +76,22 @@ export function game_join_as_player(skt: skt) {
 
 			const am_i_white = white_uid === user_id;
 			await redis.HSET(
-				STR_GAME_SETUP,
-				(am_i_white ? "white_uid" : "black_uid"),
+				LABELS.REDIS_GAME_SETUP_DATA(game_id),
+				am_i_white ? "white_uid" : "black_uid",
 				user_id
 			);
 
 			if (!player_already_joined) {
-				await redis.publish(STR_GAME_JOIN, user_id);
+				await redis.publish(
+					LABELS.REDIS_GAME_JOIN_AS_PLAYER_CHANNEL(game_id),
+					user_id
+				);
 			}
 
 			const opponent_uid = am_i_white ? black_uid : white_uid;
 			const opp = await getOpp(opponent_uid);
 
-			const game_token = Utils.generate_game_token({
+			const game_token = UTILS.generate_game_token({
 				am_i_white,
 				moves_id,
 				game_id,
@@ -92,12 +100,14 @@ export function game_join_as_player(skt: skt) {
 			skt.emit("player_joined", { opp, am_i_white, game_token });
 		}
 
-		const STR_GAME_MOVES = `moves:${moves_id}`;
-		await subscriber.subscribe(STR_GAME_MOVES, (newPgn) => {
-			skt.emit("game_moves_incoming", newPgn);
-		});
+		await subscriber.subscribe(
+			LABELS.REDIS_GAME_MOVE_CHANNEL(moves_id),
+			(newPgn) => {
+				skt.emit("game_moves_incoming", newPgn);
+			}
+		);
 
-		const pgn = await Utils.ensure_and_get_moves_pgn(moves_id);
+		const pgn = await UTILS.ensure_and_get_moves_pgn(moves_id);
 
 		log({ pgn });
 		skt.emit("game_moves_incoming", pgn);

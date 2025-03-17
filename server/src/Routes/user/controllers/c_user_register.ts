@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { USER } from "../../../Database/USER";
 import { genSaltSync, hashSync } from "bcryptjs";
 import { sign } from "jsonwebtoken";
-import { Utils } from "../../../Utils";
+import { LABELS } from "../../../Misc/LABELS";
+import { redis } from "../../../Redis/redis";
 
 type body = {
 	username: string;
@@ -37,7 +38,7 @@ export const c_user_register = async (req: Request, res: Response) => {
 
 	const auth_token = sign({ _id: user._id }, process.env.JWT_SECRET!);
 
-	Utils.ensure_user_cache(user._id, { data: { username } });
+	redis.HSET(LABELS.REDIS_USER_DATA(user._id), { username } as REDIS_USER_DATA);
 
 	res.json({ auth_token } as result);
 	return;

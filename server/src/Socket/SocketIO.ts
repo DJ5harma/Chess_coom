@@ -2,7 +2,10 @@ import { get_user_id } from "../Middleware/auth";
 import { game_join_as_player } from "./io_game/game_join_as_player";
 import { game_create } from "./io_game/game_create";
 import { game_move } from "./io_game/game_move";
-import { Utils } from "../Utils";
+import { UTILS } from "../Misc/UTILS";
+import { type DefaultEventsMap, type Server } from "socket.io";
+
+type io = Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
 
 export class SocketIO {
 	static io: io;
@@ -13,7 +16,7 @@ export class SocketIO {
 			socket.on("register-my-socket-id", async (auth_token: string) => {
 				const user_id = get_user_id(auth_token);
 				if (!user_id) return;
-				if (!(await Utils.ensure_user_cache(user_id))) return;
+				if (!(await UTILS.is_user_cache_ensured(user_id))) return;
 
 				console.log(user_id, "registered");
 

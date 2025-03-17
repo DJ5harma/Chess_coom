@@ -1,11 +1,12 @@
 import { verify, sign } from "jsonwebtoken";
-import { redis } from "./Redis/redis";
+import { redis } from "../Redis/redis";
 import { Chess } from "chess.js";
-import { USER } from "./Database/USER";
+import { USER } from "../Database/USER";
+import { LABELS } from "./LABELS";
 
 const initial_chess = new Chess();
 
-export const Utils = {
+export const UTILS = {
 	verify_game_token(game_token: string) {
 		const data = verify(game_token, process.env.JWT_SECRET!);
 
@@ -14,24 +15,23 @@ export const Utils = {
 	},
 
 	async ensure_and_get_moves_pgn(moves_id: string) {
-		const STR_GAME_MOVES = `moves:${moves_id}`;
-		let pgn = await redis.GET(STR_GAME_MOVES);
+		let pgn = await redis.GET(LABELS.REDIS_GAME_MOVES_DATA(moves_id));
 		if (!pgn) {
 			pgn = initial_chess.pgn();
-			await redis.SET(STR_GAME_MOVES, pgn);
+			await redis.SET(LABELS.REDIS_GAME_MOVES_DATA(moves_id), pgn);
 		}
 		return pgn;
 	},
 
-	async ensure_user_cache(user_id: string, opts?: { data?: USER_DATA }) {
-		if (await redis.EXISTS(`user:${user_id}:data`)) return true;
-		let d = opts?.data;
-		if (!d) {
-			const user = await USER.findById(user_id);
-			if (!user) return false;
-			d = { username: user.username } as USER_DATA;
-		}
-		await redis.HSET(`user:${user_id}:data`, d);
+	async is_user_cache_ensured(user_id: string) {
+		if (await redis.EXISTS(LABELS.REDIS_USER_DATA(user_id))) return true;
+
+		const user = await USER.findById(user_id);
+		if (!user) return false;
+
+		await redis.HSET(LABELS.REDIS_USER_DATA(user_id), {
+			username: user.username,
+		} as REDIS_USER_DATA);
 		return true;
 	},
 
