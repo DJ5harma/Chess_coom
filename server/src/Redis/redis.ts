@@ -1,7 +1,7 @@
 import { log } from "console";
 import { createClient } from "redis";
 
-export const redis = createClient();
+export const redis = createClient({ url: process.env.REDIS_URL });
 export const subscriber = redis.duplicate();
 
 export const redisConnect = async () => {
