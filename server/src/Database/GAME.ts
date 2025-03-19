@@ -17,6 +17,10 @@ export const GAME =
 					enum: ["w", "b", "d"],
 					required: [true, "result required"],
 				},
+				moveCount: {
+					type: Number,
+					required: [true, "move cnt required"]
+				}
 			},
 			{ timestamps: true }
 		)

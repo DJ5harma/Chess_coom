@@ -34,7 +34,7 @@ export function Play() {
 
 	function handleAfterMath(move_by: "w" | "b") {
 		if (chess.isCheckmate()) {
-			if (move_by === details.my_color) toast.success("Checkmate! you won!");
+			if (move_by !== details.my_color) toast.success("Checkmate! you won!");
 			else toast("Checkmate! you lost!");
 			navigate("/");
 			return;
@@ -118,7 +118,7 @@ export function Play() {
 
 	return (
 		<div className="flex flex-wrap items-center justify-around border-2 border-amber-300 flex-1 h-full gap-2">
-			<div className="border-2 border-blue-500 h-full max-w-full max-h-full aspect-square">
+			<div className="h-4/5 max-w-full max-h-full aspect-square">
 				<Chessboard
 					position={chess.fen()}
 					onPieceDrop={onDrop}
