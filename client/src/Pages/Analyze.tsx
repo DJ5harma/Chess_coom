@@ -4,6 +4,7 @@ import { api } from "../Systems/api";
 import { BoardInteractive } from "../Components/BoardInteractive";
 import { Chess, Move, Square } from "chess.js";
 import { IoPlaySkipBack, IoPlaySkipForward } from "react-icons/io5";
+import { FormattedMoves } from "../Components/FormattedMoves";
 
 type TGameData = {
     pgn: string;
@@ -67,7 +68,7 @@ export const Analyze = () => {
 
     if (!gameData) return <>Loading game data....</>;
     return (
-        <div className="flex flex-col items-center justify-around flex-1 h-full gap-2">
+        <div className="flex flex-wrap items-center justify-around flex-1 h-full gap-2">
             <p>{gameData.black.username} was Black</p>
             <p>{gameData.white.username} was White</p>
             <p>{gameData.result} won!</p>
@@ -87,10 +88,16 @@ export const Analyze = () => {
                     </>
                 )}
             </div>
+
             <BoardInteractive
                 bottom_color="w"
                 fen={chess.fen()}
                 onDrop={onDrop}
+            />
+            <FormattedMoves
+                history={chess.history()}
+                bottom={{ color: "w", username: gameData.white.username }}
+                top={{ color: "b", username: gameData.black.username }}
             />
         </div>
     );

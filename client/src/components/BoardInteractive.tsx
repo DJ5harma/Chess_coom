@@ -11,7 +11,7 @@ export const BoardInteractive = ({
     bottom_color: "w" | "b";
 }) => {
     return (
-        <div className="h-4/5 max-w-full max-h-full aspect-square">
+        <div className="min-h-3/5 max-w-full max-h-full aspect-square">
             <Chessboard
                 position={fen}
                 onPieceDrop={onDrop}
