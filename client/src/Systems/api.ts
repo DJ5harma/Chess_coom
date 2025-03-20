@@ -12,9 +12,10 @@ export class api {
 		//
 	};
 
-	static async req(endpoint: string, payload: Object, message?: string) {
+	static async req(endpoint: string, payload?: Object, message?: string) {
 		const loading = toast.loading(message || "Talking to server...");
 		try {
+			
 			const data = (await Api.post(endpoint, payload)).data;
 
 			toast.dismiss(loading);

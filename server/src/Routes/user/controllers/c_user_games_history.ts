@@ -10,6 +10,7 @@ type body = {
 
 type result = {
     games: {
+        _id: string;
         moveCount: string;
         opponent: {
             _id: string;
@@ -32,7 +33,7 @@ export async function c_user_games_history(req: Request, res: Response) {
         .limit(limit)
         .populate({
             path: "games",
-            select: "white black moveCount result pgn",
+            select: "white black moveCount result pgn _id",
             populate: { path: "white black", select: "_id username" },
         });
 
@@ -43,12 +44,14 @@ export async function c_user_games_history(req: Request, res: Response) {
             pgn,
             result,
             white,
+            _id,
         }: {
             white: { username: string; _id: string };
             black: { username: string; _id: string };
             moveCount: number;
             result: "w" | "b" | "d";
             pgn: string;
+            _id: string; // no need to specify as type of ObjectId cause it'll get converted to string anyways
         }) => {
             const am_i_white = new Types.ObjectId(user_id).equals(white._id);
             return {
@@ -57,6 +60,7 @@ export async function c_user_games_history(req: Request, res: Response) {
                 am_i_white,
                 pgn,
                 result,
+                _id,
             };
         }
     );

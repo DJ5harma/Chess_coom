@@ -5,6 +5,7 @@ import { Form } from "./Pages/Form";
 import { Home } from "./Pages/Home";
 import { SocketProvider } from "./Providers/SocketProvider";
 import { Nav } from "./Components/Nav";
+import { Analyze } from "./Pages/Analyze";
  
 export default function App() {
 	return (
@@ -17,6 +18,7 @@ export default function App() {
 						<Route path="/Home" element={<Home />} />
 						<Route path="/Form" element={<Form />} />
 						<Route path="/Play/:game_id" element={<Play />} />
+						<Route path="/Analyze/:game_id" element={<Analyze />} />
 					</Routes>
 				</UserProvider>
 			</SocketProvider>

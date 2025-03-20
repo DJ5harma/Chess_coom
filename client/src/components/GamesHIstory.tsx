@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../Systems/api";
+import { Link } from "react-router-dom";
 
 type TGamesHistory = {
+    _id: string;
     moveCount: string;
     opponent: {
         _id: string;
@@ -33,7 +35,7 @@ export const GameHistory = () => {
         <div className="w-full p-4 flex flex-col justify-center gap-2">
             <h1>Your Game History</h1>
             {gamesHistory.map(
-                ({ am_i_white, moveCount, opponent, pgn, result }) => {
+                ({ _id, am_i_white, moveCount, opponent, pgn, result }) => {
                     let outcome = "";
                     if (result === "d") outcome = "DRAW";
                     else if (result === "b")
@@ -41,11 +43,16 @@ export const GameHistory = () => {
                     else if (result === "w")
                         outcome = !am_i_white ? "Lost" : "Won";
                     return (
-                        <div className="rounded-lg border p-4">
+                        <div key={_id} className="rounded-lg border p-4">
                             <p>Opponent: {opponent.username}</p>
                             <p>Result: {outcome}</p>
                             <p>moves: {moveCount}</p>
                             <p>My color: {am_i_white ? "white" : "black"}</p>
+                            <Link to={`/Analyze/${_id}`}>
+                                <button className="bg-green-700">
+                                    Analyze Game
+                                </button>
+                            </Link>
                         </div>
                     );
                 }

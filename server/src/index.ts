@@ -8,6 +8,7 @@ import { redisConnect } from "./Redis/redis";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { SocketIO } from "./Socket/SocketIO";
+import { r_game } from "./Routes/game/r_game";
 
 dotenv.config();
 
@@ -36,4 +37,5 @@ else {
 	});
 
 	app.use("/user", r_user);
+	app.use("/game", r_game);
 }

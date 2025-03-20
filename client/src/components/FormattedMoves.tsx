@@ -4,7 +4,7 @@ export const FormattedMoves = ({ history }: { history: string[] }) => {
 	for (let i = 0; i < history.length; i += 2)
 		res.push([history[i], history[i + 1]]);
 
-	return (
+	return ( 
 		<div
 			className="flex flex-col w-full h-full"
 			style={{ maxHeight: "40vh" }}

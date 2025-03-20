@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSocket } from "../Providers/SocketProvider";
 import { useUser } from "../Providers/UserProvider";
 import { FormattedMoves } from "../Components/FormattedMoves";
+import { BoardInteractive } from "../Components/BoardInteractive";
 
 type Opponent = {
 	username: string;
@@ -20,7 +21,7 @@ export function Play() {
 	console.log({ game_id }, "play route");
 
 	const { current: chess } = useRef(new Chess());
-	const [flag, setFlag] = useState(true);
+	const [_, setFlag] = useState(true);
 
 	const [details, setDetails] = useState<{
 		my_color: "w" | "b";
@@ -51,19 +52,15 @@ export function Play() {
 		}
 	}
 
-	function makeAMove(move: any) {
-		const result = chess.move(move);
-		setFlag(!flag);
-		return result; // null if the move was illegal, the move object if the move was legal
-	}
-
 	function onDrop(sourceSquare: Square, targetSquare: Square) {
 		if (details.my_color !== chess.turn()) return false;
-		const move = makeAMove({
+		
+		const move = chess.move({
 			from: sourceSquare,
 			to: targetSquare,
 			promotion: "q", // always promote to a queen for example simplicity
 		});
+		setFlag(p => !p);
 
 		if (!move) {
 			toast("Invalid move!");
@@ -80,7 +77,7 @@ export function Play() {
 		function game_moves_incoming(newPgn: string) {
 			const move_by = chess.turn();
 			chess.loadPgn(newPgn);
-			setFlag((p) => !p);
+			setFlag(p => !p);
 			handleAfterMath(move_by);
 		}
 		function player_joined({
@@ -118,7 +115,7 @@ export function Play() {
 
 	return (
 		<div className="flex flex-wrap items-center justify-around border-2 border-amber-300 flex-1 h-full gap-2">
-			<div className="h-4/5 max-w-full max-h-full aspect-square">
+			{/* <div className="h-4/5 max-w-full max-h-full aspect-square">
 				<Chessboard
 					position={chess.fen()}
 					onPieceDrop={onDrop}
@@ -126,7 +123,12 @@ export function Play() {
 					customDarkSquareStyle={{ backgroundColor: "rgb(77, 115, 152)" }}
 					customLightSquareStyle={{ backgroundColor: "rgb(235, 234, 213)" }}
 				/>
-			</div>
+			</div> */}
+			<BoardInteractive
+                bottom_color={details.my_color}
+                fen={chess.fen()}
+                onDrop={onDrop}
+            />
 			<div className="flex flex-col min-w-md">
 				<p
 					className={`p-3 rounded-t-xl ${

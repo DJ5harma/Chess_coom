@@ -1,6 +1,5 @@
 import { get_user_id } from "../Middleware/auth";
 import { game_join_as_player } from "./io_game/game_join_as_player";
-import { game_create } from "./io_game/game_create";
 import { game_move } from "./io_game/game_move";
 import { UTILS } from "../Misc/UTILS";
 import { type DefaultEventsMap, type Server } from "socket.io";
@@ -23,7 +22,6 @@ export class SocketIO {
 				socket.user_id = user_id;
 
 				const skt = socket as skt;
-				game_create(skt);
 				game_join_as_player(skt);
 				game_move(skt);
 			});
