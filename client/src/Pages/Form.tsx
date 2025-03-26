@@ -26,11 +26,12 @@ export const Form = () => {
 				navigate("/");
 				localStorage.setItem("auth_token", auth_token);
 				toast.success("Registered Successfully!");
+				window.location.reload();
 			});
-	}
-
-	function handleLogin() {
-		api
+		}
+		
+		function handleLogin() {
+			api
 			.req(api.url.user_login, {
 				username,
 				password,
@@ -40,6 +41,7 @@ export const Form = () => {
 				navigate("/");
 				localStorage.setItem("auth_token", auth_token);
 				toast.success("Logged in Successfully!");
+				window.location.reload();
 			});
 	}
 
